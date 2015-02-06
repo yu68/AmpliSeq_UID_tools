@@ -25,7 +25,7 @@ def ParseArg():
     p.add_argument('input',type=str,help='input fastq/fasta file with UID and identifiers')
     p.add_argument('-I','--identifier',dest='identifier',type=str,help='identifier sequence file')
     p.add_argument('-l','--uidLen',type=int,default=10,help='length of UID, will search for +-1 basepair, default=10')
-    p.add_argument('-H','--head',action='store_true',help='set this if uid is at teh beginning of the reads, otherwise, uid is at the end of reads')
+    p.add_argument('-H','--head',action='store_true',help='set this if uid is at the beginning of the reads, otherwise, uid is at the end of reads')
     p.add_argument('-m','--max_mis',dest='max_mis',type=int,default=2, help="max(mismatch+indel) allowed for identifier match, otherwise move reads into 'unassigned' file. default: 2")
     p.add_argument('-o','--output',type=str, help="output fastq/fasta file name")
     if len(sys.argv)==1:
