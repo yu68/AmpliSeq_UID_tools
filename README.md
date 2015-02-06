@@ -46,7 +46,7 @@ usage: extract_UID.py [-h] [-f | -q] [-I IDENTIFIER] [-l UIDLEN] [-H]
 Extract UID sequences and put it in fastq/a name
 
 positional arguments:
-  input                 input fastq/fasta file 1 with UID and identifiers
+  input                 input fastq/fasta file with UID and identifiers
 
 optional arguments:
   -h, --help            show this help message and exit

@@ -22,7 +22,7 @@ def ParseArg():
     group=p.add_mutually_exclusive_group()
     group.add_argument("-f","--fasta",action='store_true',help='add this option for fasta input file')
     group.add_argument("-q","--fastq",action='store_true',help='add this option for fastq input file')
-    p.add_argument('input',type=str,help='input fastq/fasta file 1 with UID and identifiers')
+    p.add_argument('input',type=str,help='input fastq/fasta file with UID and identifiers')
     p.add_argument('-I','--identifier',dest='identifier',type=str,help='identifier sequence file')
     p.add_argument('-l','--uidLen',type=int,default=10,help='length of UID, will search for +-1 basepair, default=10')
     p.add_argument('-H','--head',action='store_true',help='set this if uid is at teh beginning of the reads, otherwise, uid is at the end of reads')
