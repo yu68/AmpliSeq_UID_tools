@@ -3,7 +3,7 @@
 ---
 
 #### extract\_UID.py
-Extract UID sequences from the read with structure "UU...UUII...IIRRRR...RRRR" or "RRRR...RRRRII...IIUU...UU". Trim the Identifier (II...II) and UID (UU...UU), keep the actual reads (RRRR...RRRR). Then ths UID information are stored in the read name information.
+Extract UID sequences from the read with structure "UU...UUII...IIRRRR...RRRR" or "RRRR...RRRRII...IIUU...UU". Trim the Identifier (II...II) and UID (UU...UU), keep the actual reads (RRRR...RRRR). Then the UID information are stored in the read name information.
 
 __input:__
 ```
