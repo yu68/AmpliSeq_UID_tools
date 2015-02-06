@@ -7,19 +7,35 @@ Extract UID sequences from the read with structure "UU...UUII...IIRRRR...RRRR" o
 
 __input:__
 ```
-@IM\_READ\_NAME 1:N:0:12 
+@IM_READ_NAME 1:N:0:12 
 UU...UUII...IIRRRR...RRRR
++
+&%^^&$#%^##&&^@I^%#^%(($!
+```
+  or
+```
+@IM_READ_NAME 1:N:0:12
+RRRR...RRRRII...IIUU...UU
 +
 &%^^&$#%^##&&^@I^%#^%(($!
 ```
 
 __output:__
 ```
-@IM\_READ\_NAME\_UU...UU 1:N:0:12
+@IM_READ_NAME_UU...UU 1:N:0:12
 RRRR...RRRR
 +
 @I^%#^%(($!
 ```
+  or 
+```
+@IM_READ_NAME_UU...UU 1:N:0:12
+RRRR...RRRR
++
+&%^^&$#%^##
+```
+
+
 
 __Usage:__
 ```
@@ -53,3 +69,15 @@ optional arguments:
 require: Bio
 
 ```
+
+__Example:__
+```
+python extract_UID.py -q test_input.fastq -I identifier.txt -o test_output
+```
+
+__Explanations:__
+* the identifier sequence file contains identifier sequences one per line. The program will check the alignment between read sequence and each identifier sequence and find the alignment with smallest mismatchs and indels. All the identifier sequences need to have same length
+* If the location of best alignment with identifiers is close to the actual UID (with UID length specified) and identifier locations, UIDs are extracted.
+* '-H' is specified if UID is at the begining of the reads (case: "UU...UUII...IIRRRR...RRRR"), otherwise don't set '-H'
+* If the best alignment has mismatch and indel number larger than the number specified by '-m', we cannot locate the identifier and the original reads are stored in "unassign_<output>.fastq/a" file.
+
