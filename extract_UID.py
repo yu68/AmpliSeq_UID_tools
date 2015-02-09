@@ -2,6 +2,7 @@ import sys, os, argparse
 import itertools
 from Bio import SeqIO
 from time import time
+from Bio import pairwise2
 
 print >>sys.stdout, "Checking Biopython installed or not... "
 try:
@@ -26,7 +27,9 @@ def ParseArg():
     p.add_argument('-I','--identifier',dest='identifier',type=str,help='identifier sequence file')
     p.add_argument('-l','--uidLen',type=int,default=10,help='length of UID, will search for +-1 basepair, default=10')
     p.add_argument('-H','--head',action='store_true',help='set this if uid is at the beginning of the reads, otherwise, uid is at the end of reads')
+    p.add_argument('--keep_identifier',action="store_true",help="set to keep the identifier sequences in the output fastq file")
     p.add_argument('-m','--max_mis',dest='max_mis',type=int,default=2, help="max(mismatch+indel) allowed for identifier match, otherwise move reads into 'unassigned' file. default: 2")
+    p.add_argument('-M','--Method',type=int, default=2, help="Method for alignment(1-2): 1. Levenshtein distance algorithm; 2. pairwise Alignment; Default: 2")
     p.add_argument('-o','--output',type=str, help="output fastq/fasta file name")
     if len(sys.argv)==1:
         print >>sys.stderr,p.print_help()
@@ -81,11 +84,12 @@ def Main():
        type="fastq"
     elif args.fasta:
        type="fasta"
-
+    
     output=open("%s.%s"%(args.output,type),'w')
     output_unassign=open("unassign_%s.%s"%(args.output,type),'w')
-    uid_info = open("uid_info.txt",'w')    
+    uid_info = open("uid_identifier.fastq",'w')    
  
+    time_s = time()
     #----------- read identifiers ----------
     identifiers=[]
     for i in open(args.identifier,'r'):
@@ -101,27 +105,48 @@ def Main():
             read_seq = record.seq[(uidLen-1):(uidLen+identi_len+1)]
         else:
             read_seq = record.seq[(-uidLen-identi_len-1):(-uidLen+2)]
-        for i in identifiers:
-            score,j=fuzzy_substring(i,read_seq)
-            if score<miScore:
-                barcode=i
-                end=j
-                miScore=score
+        if args.Method==1:
+            for i in identifiers:
+                score,j=fuzzy_substring(i,read_seq)
+                if score<miScore:
+                    barcode=i
+                    end=j
+                    miScore=score
+            start = end-identi_len
+        elif args.Method==2:
+            for i in identifiers:
+                alns = pairwise2.align.localxs(read_seq, i, -0.5,0)
+                aln_seq, _,score,aln_start,aln_end=alns[0]
+                score = identi_len-score
+                if score<miScore:
+                    start = aln_start-aln_seq[:aln_start].count("-")
+                    end = aln_end-aln_seq[:aln_end].count("-")
+                    miScore=score
+                 
         if miScore>args.max_mis:
             SeqIO.write(record, output_unassign, type)
         else:
             if args.head:
-                uidSeq = record.seq[:(uidLen-1+end-identi_len)]
+                uidSeq = record.seq[:(uidLen-1+start)]
                 record.id += '_%s'%(uidSeq)
-                SeqIO.write(record[(uidLen-1+end-identi_len):],output,type)
+                if args.keep_identifier:
+                    SeqIO.write(record[(uidLen-1+start):],output,type)
+                else:
+                    SeqIO.write(record[(uidLen-1+end):],output,type)
+                SeqIO.write(record[:(uidLen-1+start)],uid_info,type)  # add both UID and identifier seq for SEED
             else:
                 uidSeq = record.seq[(-uidLen-identi_len-1+end):]
                 record.id += '_%s'%(uidSeq)
-                SeqIO.write(record[:(-uidLen-identi_len-1+end)],output,type)
-            print >>uid_info, "%s\t%d\t%s"%(uidSeq,miScore,record.id)
+                if args.keep_identifier:
+                    SeqIO.write(record[:(-uidLen-identi_len-1+end)],output,type)
+                else:
+                    SeqIO.write(record[:(-uidLen-identi_len-1+start)],output,type)
+                SeqIO.write(record[(-uidLen-identi_len-1+end):],uid_info,type)  # add both UID and identifier seq for SEED
     output.close()
     output_unassign.close()
     uid_info.close()
+    running_time = time() - time_s
+    print >>sys.stdout, "Running time: %.2fs"%running_time
 
 if __name__=="__main__":
     Main()
